@@ -1,0 +1,70 @@
+---
+title: "빅데이터를이용한통계그래픽스 HW #1"
+author: "1678226 유찬미 (Chanmi Yoo)"
+date: "2019년 9월 27일"
+output: word_document
+---
+
+###### R에 내장되어 있는 mtcars를 자료를 이용
+```{r setup}
+data(mtcars)
+```
+
+###### 1) mtcars 자료에 대한 설명으로부터 변수들의 설명을 찾아보시오.  
+```{r}
+summary(mtcars)  
+# mtcars 자료의 변수들에 대한 기초통계량 값은 아래와 같다.
+```
+
+###### 2) mtcars 자료의 개수와 변수의 개수를 구하시오.
+```{r}
+str(mtcars)
+
+# 자료의 개수는 32개, 변수의 개수는 11개이다.
+```
+
+###### 3) write.csv를 이용하여 mtcars.csv 파일을 생성하시오.
+```{r}
+write.csv(mtcars, "mtcars.csv")
+```
+
+###### 4) 생성한 mtcars.csv 파일을 읽어들여 mtcars.read라는 이름의 object를 만드시오.
+```{r}
+mtcars.read <- read.csv("mtcars.csv")
+head(mtcars.read)
+```
+
+###### 5) mtcars와 mtcars.read의 처음 6줄씩을 비교하고 차이가 있다면 어떤 차이가 있는지 기술하시오.
+```{r}
+head(mtcars)
+head(mtcars.read)
+# mtcars는 첫 행에 배정된 행이름이 없지만, mtcars.read의 첫 행의 행이름이 X가 되었다. 그외에는 동일하다. 
+```
+
+###### 6) transmission이 automatic인지 아닌지를 TRUE/FALSE로 나타내는 논리벡터 isAuto 를 만드시오.
+```{r}
+isAuto <- is.logical(mtcars$transmission == 'automatic')
+isAuto
+```
+
+###### 7) mpg값이 평균보다 크거나 같으면 100, 작으면 0의 값을 갖는 새로운 숫자벡터 mpgR을 만드시오.
+```{r}
+
+mpgR <- vector()  # 빈 벡터 생성 
+
+attach(mtcars)
+
+for (i in 1:length(mpg)){
+  if (mpg[i] >= mean(mpg)){
+    mpgR[i] <- 100
+} else {
+  mpgR[i] <- 0
+}
+}
+
+detach(mtcars)
+
+mpgR
+class(mpgR) ; is.vector(mpgR) # mpgR이 숫자 벡터임을 확인할 수 있다.
+  
+```
