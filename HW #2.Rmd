@@ -1,0 +1,185 @@
+---
+title: '빅데이터를이용한통계그래픽스 HW #2'
+author: "1678226 유찬미 (Chanmi Yoo)"
+date: "2019년 10월 4일"
+output: word_document
+---
+
+###### smallDia.csv 파일에는 7개의 변수를 가진 다이아몬드에 대한 자료가 들어있다.
+```{r setup}
+# Load Packages
+library(tidyverse)
+library(ggplot2)
+
+# Load Data
+smallDia <- read.csv("smallDia.csv")
+head(smallDia)
+
+```
+
+###### 1) 각 변수의 분포를 변수의 특징에 맞는 그림을 그리고 해석하시오.  
+
+```{r}
+# 1) carat 변수(연속형)
+ggplot(smallDia, aes(carat)) +
+  geom_histogram(binwidth = 0.05)
+ggplot(smallDia, aes(carat)) +
+  geom_freqpoly() 
+```
+
+해석: 몇 개의 peak가 보이는데, 무게가 0.3인 경우와 1인 경우가 눈에 띄게 많다. 
+
+```{r}
+# 2) cut 변수(범주형)
+ggplot(smallDia, aes(cut)) +
+  geom_bar() +
+  scale_x_discrete(limit=c("Fair", "Good", "Very Good", "Premium")) # 배열순서 변경
+
+```
+
+해석: cutting 질이 Fair 등급인 다이아몬드는 별로 없고, Very Good과 Premium 등급인 다이아몬드의 개수가 많다. 
+
+```{r}
+# 3) color (범주형)
+ggplot(smallDia, aes(color)) +
+  geom_bar()
+
+table(smallDia$color)
+color_num <- data.frame(color= c('D',   'E',   'F',   'G',   'H',   'I',   'J' ),
+                        count = c(45 , 79, 117, 190,  73  ,48,  26) )
+ggplot(color_num, aes("", count, fill = color)) +
+  geom_bar(stat="identity") +
+  coord_polar("y")
+```
+
+해석: 색상별 개수 차이가 있다. G 색상이 가장 많고, J 색상이 가장 적다. 
+
+```{r}
+# 4) clarity(범주형)
+table(smallDia$clarity)
+ggplot(smallDia, aes(clarity, "", fill=clarity)) +
+  geom_bar(stat = "identity")
+```
+
+해석: 주어진 자료의 모든 다이아몬드는 투명도가 IF로 동일하다. 
+
+
+```{r}
+# 5) depth (연속형)
+ggplot(smallDia, aes(depth)) +
+  geom_histogram(binwidth = 0.1)
+```
+
+해석: 61을 기준으로 전반적으로 대칭 구조를 따르며, 매우 작은 이상치가 있다. 
+
+```{r}
+# 6) table (연속형)
+ggplot(smallDia, aes(table)) +
+  geom_density()
+```
+
+해석: 58에서 peak가 발생하며, 거의 대칭에 가깝지만 왼쪽으로 아주 살짝 치우친 분포이다. 
+
+```{r}
+# 7) price (연속형)
+ggplot(smallDia, aes(price)) +
+  geom_freqpoly(bins = 30)
+```
+
+해석: 가격은 2500 이하인 경우가 대다수였으나, 약 20000까지 간 경우도 있었다. 매우 왼쪽으로 치우친 분포이다.  
+  
+  
+  
+###### 2) 가격에 영향을 미치는 변수를 알아보고자 한다. 이를 위한 다양한 알맞은 그림 을 그린 후 해석하고 결론을 도출하시오.
+
+```{r}
+# 1) carat과 price의 관계 
+ggplot(smallDia, aes(carat, price)) +
+  geom_point() +
+  geom_smooth(method="lm")
+```
+
+해석1) 전반적으로 price는 carat에 비례한다.
+해석2) 그러나 carat(크기)가 커질수록 크기로 가격을 예측하기 어려워진다. 0.5 carat 미만일 때는 크기가 비슷하면 비슷한 가격으로 책정되었고, 0.5~1 carat일 때는 비교적 carat 크기에 비례해 가격이 책정되었지만, 1 carat을 초과하면 비슷한 크기이더라도 가격이 천차만별이다.
+
+```{r}
+
+# 2) cut과 price의 관계 
+ggplot(smallDia, aes(cut, price)) +
+  geom_boxplot() +
+  scale_x_discrete(limits=c("Fair", "Good", "Very Good", "Premium")) 
+
+ggplot(smallDia, aes(cut, price)) +
+  geom_violin() +
+  scale_x_discrete(limits=c("Fair", "Good", "Very Good", "Premium")) 
+
+ggplot(smallDia, aes(price, color=cut)) +
+  geom_freqpoly()
+```
+
+해석1) cutting 질에 상관 없이 가격이 약 2500인 경우가 많았다.  
+해석2) cutting의 질은 얼마나 다이아몬드가 비싸질 수 있는가와 관련이 있었다. Fair 등급인 경우 가격이 대부분 2500 이하에서 형성되고, Very Good과 Premium인 경우 10000정도로 비싼 가격에 팔리는 경우도 많았다.  
+
+```{r}
+
+# 3) color와 price의 관계
+ggplot(smallDia, aes(price, "", color=color)) +
+  geom_point() +
+  geom_jitter()
+
+ggplot(smallDia, aes(color, price)) +
+  geom_boxplot()
+
+ggplot(smallDia, aes(price, color=color)) +
+  geom_freqpoly()
+
+ggplot(smallDia,aes(price)) + 
+  geom_histogram() + 
+  facet_wrap(~color) 
+```
+
+해석) 색상에 따라 대강의 가격이 형성된다. peak를 기준으로 크게 3가지 그룹으로 나눌 수 있다. H, I 색상은 싼 그룹(2500 peak), E, F, G, J는 중간 그룹(2500과 10000 peak), D는 비싼 그룹(2500과 15000 peak)으로 나누어볼 수 있다.  
+
+
+```{r}
+
+# 4) depth와 price의 관계
+ggplot(smallDia, aes(depth, price)) +
+  geom_point()
+
+ggplot(smallDia, aes(depth, price)) +
+  geom_point() +
+  geom_smooth(method="lm")
+```
+
+해석: 깊이와 가격 사이 특별한 패턴이 보이지 않는다. 
+
+```{r}
+# 5) table과 price의 관계 
+ggplot(smallDia, aes(table, price)) +
+  geom_point() 
+
+ggplot(smallDia, aes(table, price)) +
+  geom_point() +
+  geom_jitter(color = "grey")
+
+smallDia$table.f <- factor(smallDia$table)
+ggplot(smallDia, aes(table.f, price)) +
+  geom_boxplot()
+  
+ggplot(smallDia, aes(price)) +
+  geom_histogram() +
+  facet_wrap(~table)
+
+```
+
+해석1) 윗면 길이와 가격이 비례한다고 보기 어렵다.  
+해석2) 뒷면 길이가 너무 작거나 너무 길지 않을 때, 비싼 다이아몬드가 많았다.   
+
+```{r}
+# 6) 산점도 행렬 
+library(GGally) 
+ggpairs(smallDia)
+```
+
+
