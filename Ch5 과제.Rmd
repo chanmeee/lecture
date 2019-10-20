@@ -1,0 +1,385 @@
+---
+title: "Chapter 5 Homework"
+author: "1678226 Chanmi  Yoo (유찬미)"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Regression Analysis  
+20657-02  
+Jae Keun Yoo  
+Oct 14, 2019  
+
+
+### Q5.2  
+
+```{r}
+a <- matrix(c(2,3,5,4,1,5,7,8), ncol=2)
+b <- matrix(c(6,9,3,1), ncol=1)
+c <- matrix(c(3,8,5,2,8,6,1,4), ncol=2)
+
+# The result of (1), (2), (3), (4), (5) are:
+a + c
+a - c
+t(b) %*% c  # t(b) is the transpose of B
+a %*% t(c)
+t(c) %*% a
+
+# The dimension of each resulting matrix are:
+dim(a + c)  # 4 x 2 matrix
+dim(a - c)  # 4 x 2 matrix
+dim(t(b) %*% c)  # 1 x 2 matrix
+dim(a %*% t(c))  # 4 x 4 matrix
+dim(t(c) %*% a)  # 2 x 2 matrix
+```
+
+
+  
+### Q5.3
+
+### (1)
+
+The matrix terms of $Y_i - \hat{Y_i} = e_i$ is:
+$$\mathbf{e} =  \mathbf{Y} - \mathbf{\hat{Y}} = \mathbf{Y} -  \mathbf{X} \mathbf{b}$$
+
+Since $i = 1, ... , 4$, 
+$$\left[ \begin{array}
+{rrr}
+e_1 \\ e_2 \\ e_3 \\ e_4
+\end{array} \right]
+= 
+\left[ \begin{array}
+{rrr}
+Y_1 \\ Y_2 \\ Y_3 \\ Y_4
+\end{array} \right] 
+- \left[ \begin{array}
+{rrr}
+1 & X_1 \\ 1 & X_2 \\ 1 & X_3 \\ 1 & X_4
+\end{array} \right] 
+\left[ \begin{array}
+{rrr}
+b_0 \\ b_1 
+\end{array} \right]$$
+
+### (2)
+
+The matrix terms of $\sum{X_ie_i} = 0$ is:
+$$\mathbf{X}^{'} \mathbf{e}  = 0$$
+
+Since $i = 1,...,4$,
+
+$$ 
+\left[ \begin{array}
+{rrr}
+1 & 1 & 1 & 1 \\
+X_1  & X_2  & X_3  & X_4
+\end{array} \right] \left[ \begin{array}
+{rrr}
+e_1 \\ e_2 \\ e_3 \\ e_4 
+\end{array} \right] = 
+\left[ \begin{array}
+{rrr}
+0 \\ 0 
+\end{array} \right]
+$$
+
+### Q5.5
+
+```{r}
+data0505 <- read.table("../Data Sets/Chapter  5 Data Sets/CH05PR05.txt"); names(data0505) <- c("Y", "X")
+X <- matrix(c(rep(1, nrow(data0505)),data0505$X), ncol=2); X
+Y <- matrix(data0505$Y, ncol=1); Y
+```
+
+### (1) 
+
+$\mathbf{Y^{'}} \mathbf{Y}$ is:
+```{r}
+t(Y) %*% Y
+```
+
+### (2) 
+
+$\mathbf{X^{'}} \mathbf{X}$ is:
+```{r}
+t(X) %*% X
+```
+
+### (3) 
+
+$\mathbf{X^{'}} \mathbf{Y}$ is:
+
+```{r}
+t(X) %*% Y
+```
+
+
+### Q5.8
+
+### (a)
+
+Yes, the column vectors of $\mathbf{B}$ are linearly dependent.  
+When $k_1 = -5, k_1 = 1, k_1 = 1$, $k_1C_1 + k_2C_2 + k_3C_3 = 0$.
+
+### (b)
+
+The rank of $\mathbf{B}$ is 2.  
+From the result of above (a) question, we know that the rank of $\mathbf{B}$ cannot be 3. And the rank is smaller(or the same) than the minimum value of the number of rows and columns. So check if the rank is 2 or not. There is no scalars $k_1, k_2$ that satisfies $k_1C_1 + k_2C_2 = 0$ other than $k_1= k_2=0$, so the rank is 2.
+
+### (c)
+
+The determinant of $\mathbf{B}$ is:
+
+```{r}
+B <- matrix(c(1,1,1,5,0,0,0,5,5), ncol=3)
+
+det(B)  
+
+# To illustrate the calculating process
+# det(B) = a(ek-fh) - b(dk-fg) + c(dh-eg), where B is 3x3 matrix
+a <- B[1,1]; b <- B[1,2]; c <- B[1,3]; d <- B[2,1]; e <- B[2,2]; f <- B[2,3]; g <- B[3,1]; h <- B[3,2]; k <- B[3,3]
+
+a*(e*k-f*h) - b*(d*k-f*g) + c*(d*h-e*g)
+```
+
+
+### Q5.10
+  
+```{r}
+A <- matrix(c(2,3,4,1), ncol=2)
+B <- matrix(c(4,6,10,3,5,1,2,10,6), ncol=3)
+```
+
+The inverse matrix of A and B are each:
+
+```{r}
+solve(A)
+solve(B)
+
+# To illustarte the calculating process
+det.A <- A[1,1]*A[2,2] - A[1,2]*A[2,1]
+A.inverse <- (1/det.A) * matrix(c(A[2,2], -A[1,2], -A[2,1], A[1,1]), ncol=2, byrow=T); A.inverse
+
+a <- B[1,1]; b <- B[1,2]; c <- B[1,3]; d <- B[2,1]; e <- B[2,2]; f <- B[2,3]; g <- B[3,1]; h <- B[3,2]; k <- B[3,3] # assign elements of B to a, b, ..., k
+det.B <- a*(e*k-f*h) - b*(d*k-f*g) + c*(d*h-e*g)
+B.inverse <- (1/det.B) * matrix(c(e*k-f*h, -(b*k-c*h), b*f-c*e,
+                                  -(d*k-f*g), a*k-c*g, -(a*f-c*d),
+                                  d*h-e*g, -(a*h-b*g), a*e-b*d), 
+                                nrow=3, byrow=T); B.inverse
+```
+  
+
+### Q5.14  
+
+### (a)
+
+The matrix notation for the equations is:
+
+$$\left( \begin{array}
+{rrr}
+4 & 7 \\ 2 & 3
+\end{array} \right)
+\left( \begin{array}
+{rrr}
+\mathbf{y_1} \\ \mathbf{y_2}
+\end{array} \right)
+=
+\left( \begin{array}
+{rrr}
+25 \\ 12
+\end{array} \right)$$
+
+### (b)
+
+Using the inverse matrix, we can find $\mathbf{y_1}$ and $\mathbf{y_2}$.  
+
+```{r}
+x <- matrix(c(4,2,7,3), ncol=2)
+solve(x) %*% matrix(c(25,12), ncol=1)
+```
+
+Therefore, $$\mathbf{y_1} = 4.5, \; \mathbf{y_2} = 1.0$$   
+  
+### Q5.17
+
+### (a)
+
+The matrix notation for three equations is:
+$$
+\left( \begin{array}
+{rrr}
+1 & 1 & 1 \\ 1 & -1 & 0 \\ 1 & -1 & -1
+\end{array} \right)
+\left( \begin{array}
+{rrr}
+Y_1 \\ Y_2 \\ Y_3
+\end{array} \right)
+=
+\left( \begin{array}
+{rrr}
+W_1 \\ W_2 \\ W_3
+\end{array} \right)
+$$
+  
+### (b)
+
+The expectation of $\mathbf{W}$ where $A$ is the constant matrix is:
+
+$$E\{W\} = E\{AY\} = AE\{Y\} = \left( \begin{array}
+{rrr}
+1 & 1 & 1 \\ 1 & -1 & 0 \\ 1 & -1 & -1
+\end{array} \right)
+\left( \begin{array}
+{rrr}
+E\{Y_1\} \\ E\{Y_2\} \\ E\{Y_3\}
+\end{array} \right) = 
+\left( \begin{array}
+{rrr}
+E\{Y_1\} + E\{Y_2\} + E\{Y_3\} \\
+E\{Y_1\} - E\{Y_2\}  \\
+E\{Y_1\} - E\{Y_2\} - E\{Y_3\}
+\end{array} \right)
+$$ 
+
+  
+### (c)
+
+The variance-covariance matrix of $\mathbf{W}$ is:
+
+$$\sigma^2\{W\} = \sigma^2\{AY\} = A\sigma^2\{Y\}A^{'} = 
+\left( \begin{array}
+{rrr}
+1 & 1 & 1 \\ 1 & -1 & 0 \\ 1 & -1 & -1
+\end{array} \right)
+\left( \begin{array}
+{rrr}
+\sigma^2\{Y_1\} & \sigma\{Y_1, Y_2\} & \sigma\{Y_1, Y_3\}\\ 
+\sigma\{Y_2, Y_1\} & \sigma^2\{Y_2\} & \sigma\{Y_2, Y_3\}\\ 
+\sigma\{Y_3, Y_1\} & \sigma\{Y_3, Y_2\} &\sigma^2\{Y_3\}
+\end{array} \right)
+\left( \begin{array}
+{rrr}
+1 & 1 & 1 \\ 1 & -1 & -1 \\ 1 & 0 & -1
+\end{array} \right)
+$$ 
+
+
+### Q5.18 
+
+### (a)
+
+$$
+\left( \begin{array}
+{rrr}
+W_1 \\ W_2
+\end{array} \right) 
+= 
+\left( \begin{array}
+{rrr}
+\frac{1}{4} & \frac{1}{4} & \frac{1}{4} & \frac{1}{4} \\
+\frac{1}{2} & \frac{1}{2} & -\frac{1}{2} & -\frac{1}{2}
+\end{array} \right)
+\left( \begin{array}
+{rrr}
+Y_1 \\ Y_2\\ Y_3 \\ Y_4
+\end{array} \right)
+$$ 
+
+### (b)  
+
+The expectation of $\mathbf{W}$ is:
+
+$$
+E\{W\} =
+\left( \begin{array}
+{rrr}
+\frac{1}{4} & \frac{1}{4} & \frac{1}{4} & \frac{1}{4} \\
+\frac{1}{2} & \frac{1}{2} & -\frac{1}{2} & -\frac{1}{2}
+\end{array} \right)
+\left( \begin{array}
+{rrr}
+E\{Y_1\} \\ E\{Y_2\} \\ E\{Y_3\} \\ E\{Y_4\}
+\end{array} \right)
+$$
+
+### (c)
+
+The variance-covariance of $\mathbf{W}$ is:
+
+$$
+\sigma^2\{W\} =
+\left( \begin{array}
+{rrr}
+\frac{1}{4} & \frac{1}{4} & \frac{1}{4} & \frac{1}{4} \\
+\frac{1}{2} & \frac{1}{2} & -\frac{1}{2} & -\frac{1}{2}
+\end{array} \right)
+\left( \begin{array}
+{rrr}
+\sigma^2\{Y_1\} & \sigma\{Y_1, Y_2\} & \sigma\{Y_1, Y_3\} & \sigma\{Y_1, Y_4\}\\ 
+\sigma\{Y_2, Y_1\} & \sigma^2\{Y_2\} & \sigma\{Y_2, Y_3\} & \sigma\{Y_2, Y_4\}\\ 
+\sigma\{Y_3, Y_1\} & \sigma\{Y_3, Y_2\} &\sigma^2\{Y_3\} & \sigma\{Y_3, Y_4\}\\
+\sigma\{Y_4, Y_1\} & \sigma\{Y_4, Y_2\} & \sigma\{Y_4, Y_3\} &\sigma^2\{Y_4\}
+\end{array} \right)
+\left( \begin{array}
+{rrr}
+\frac{1}{4} & \frac{1}{2} \\
+\frac{1}{4} & \frac{1}{2} \\
+\frac{1}{4} & -\frac{1}{2} \\
+\frac{1}{4} & -\frac{1}{2} 
+\end{array} \right)
+$$
+
+### Q5.25  
+
+### (a)
+
+```{r}
+data0525 <- read.table("../Data Sets/Chapter  1 Data Sets/CH01PR21.txt"); names(data0525) <- c("Y", "X")
+X <- matrix(c(rep(1, nrow(data0525)),data0525$X), ncol=2)
+Y <- matrix(data0525$Y, ncol=1)
+
+# (1)
+inv_X.X <- solve(t(X) %*% X) ; inv_X.X
+
+# (2)
+b <- inv_X.X %*% (t(X) %*% Y) ; b
+
+# (3)
+e <- Y - (X %*% b) ; e
+
+# (4)
+H <- X %*% inv_X.X %*% t(X); H
+
+# (5)
+SSE <- as.vector(t(Y-X%*%b) %*% (Y-X%*%b)) ; SSE
+
+# (6)
+MSE <- SSE / (nrow(data0525) -2) ; MSE
+s_b <- MSE * inv_X.X ; s_b
+
+# (7)
+X_h <- matrix(c(1,2), ncol=1); X_h
+s_pred2 <- MSE * (1 + t(X_h) %*% inv_X.X %*% X_h) ; s_pred2
+```
+
+### (b)
+
+```{r}
+s_b
+```
+
+Thus, (1) $s^2\{b_0\}$ is 0.44, (2 $s\{b_0, b_1\}$ is -0.22, (3) $s^2\{b_1\}$ is 0.22.  
+  
+
+### (c)
+
+The quadratic form for SSR is: $$SSR = Y^{'}(H - (\frac{1}{n})J)Y$$
+
+```{r}
+SSR <- t(Y) %*% (H - (1/nrow(data0525))*matrix(rep(1, nrow(data0525)^2), ncol = 10)) %*% Y ; SSR 
+```
