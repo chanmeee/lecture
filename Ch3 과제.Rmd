@@ -1,0 +1,220 @@
+---
+title: "Chapter 3 Homework"
+author: "1678226 Chanmi  Yoo (유찬미)"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Regression Analysis  
+20657-02  
+Jae Keun Yoo  
+Oct 14, 2019  
+
+
+### Q3.4  
+### (a)
+
+The dot plot for the number of copiers serviced $X_i$ is:
+
+```{r}
+data0304 <- read.table("../Data Sets/Chapter  3 Data Sets/CH03PR04.txt"); names(data0304) <- c("Y", "X", "X2", "X3")
+lm.0304 <- lm(Y~X, data=data0304)
+
+dotchart(data0304$X)
+```
+
+This plot shows that they are evenly distributed and there is no outlier.
+  
+### (b)
+
+The time plot for the number of copiers serviced is:
+
+```{r}
+plot(seq(nrow(data0304)), data0304$Y, 
+     xlab = "time", ylab = "the number of copiers serviced")
+```
+  
+There is no special pattern in this time plot. The number of copiers serviced was not correlated over time.
+  
+### (c)
+
+The stem-and-leaf plot of the residuals is:
+
+```{r}
+resd <- lm.0304$resid
+stem(resd)
+```
+
+The distribution of residuals is slightly skewed to the right.  
+  
+  
+### (d)
+  
+```{r}
+fitted <- lm.0304$fitted
+
+abs.resd <- abs(resd)
+
+sqrt.mse <- summary(lm.0304)[[6]]; std.resd <- resd / sqrt.mse
+
+par(mfrow=c(1,2))  #화면을 1*2로 분할 
+plot(fitted, resd,
+     xlab="fitted", ylab="residual") 
+plot(data0304$X, resd,
+     xlab="X", ylab="residual") 
+```
+  
+Yes, two plots provide the same information.  
+Since the variance of residuals seems to be constant over different $X$ and $\hat Y$ levels, errors($\varepsilon_i$) have constant variance. The constant variance assumption of simple linear regression was not violated.     
+
+### (e)  
+  
+```{r}
+new_resd <- order(resd)
+qq.r <- qqnorm(new_resd); qq.r
+qqline(new_resd)
+
+cor(qq.r$x, qq.r$y)
+
+```
+
+The coefficient of correlation between the ordered residuals and their expected values under normality is 0.989. With n=45, the critical value for the coefficient of correlation n between the ordered residuals and the expected values at $\alpha$ = 0.01 is 0.979. Since 0.989 > 0.979, the assumption of normality appears to be tenable.  
+  
+### (f)  
+
+```{r}
+plot(seq(nrow(data0304)), data0304$Y,
+     xlab="time", ylab="residual")
+
+```
+ 
+The residual plot against time did not show any evidence that error terms were correlated over time.  
+
+### (g)
+  
+To check whether if the error variance varies with the level of X, the alternatives would be:  
+
+$$\begin{cases}H_0 \;:\;  \gamma_{1} = 0 \\
+H_a \;:\; \gamma_{1} \neq 0
+\end{cases}$$ at $\alpha = .05$ 
+  
+```{r}
+ano <- anova(lm.0304)
+ssr <- ano$`Sum Sq`[[1]]; ssr
+sse <- ano$`Sum Sq`[[2]]; sse 
+
+```
+    
+Hence the test statistic is:  
+
+$$X^2_{BP} = \frac{SSR^*}{2} \div \Big(\frac{SSE}{n}\Big)^2 = \frac{76960.42^*}{2} \div \Big(\frac{3416.377}{45}\Big)^2 = 6.6762$$
+  
+The decision rule is:
+
+$$\begin{cases}\text{If } |X^2_{BP}| \leq  \chi^2( .95 \; ; \, 1) \text{, conclude } H_0  \\
+\text{If } |X^2_{BP}| >  \chi^2( .95 \; ; \, 1) \text{, reject } H_0 \end{cases}$$
+  
+$\chi^2( .95 \; ; \, 1)$ is:
+
+```{r}
+round(qchisq(.95, 1), 4)
+```  
+  
+Since $X^2_{BP} = 6.6762 > 3.8415$, reject $H_0$(conclude $H_a$). Thus, the error variance is not constant.  
+
+### (h)
+
+```{r}
+par(mfrow=c(1,2)) 
+plot(data0304$X2, resd,
+     xlab="X2", ylab="residual")
+plot(data0304$X3, resd,
+     xlab="X3", ylab="residual")
+``` 
+
+The residual versus $X_2$ plot showed a positive linear trend. It means that the regression model might be improved by including $X_2$.  
+The residual versus $X_3$ plot did not show any special pattern. So, adding $X_3$ into the model may not bring any improvement in terms of model fitting.  
+  
+  
+### Q3.6  
+### (a)
+
+The dot plot for the number of copiers serviced $X_i$ is:
+
+```{r}
+data0306 <- read.table("../Data Sets/Chapter  1 Data Sets/CH01PR22.txt"); names(data0306) <- c("Y", "X")
+lm.0306 <- lm(Y~X, data=data0306)
+resd <- lm.0306$residuals; resd
+boxplot(resd, main = "Boxplot of the residuals")
+```
+
+The distribution of residuals is symmetric with the mean of 0.  
+
+### (b)
+  
+```{r}
+fitted <- lm.0306$fitted.values
+plot(fitted, resd)
+```
+  
+There is no special pattern in the residual versus fitted plot. The range of fitted values is (200, 250) and residuals are evenly distributed. Thus, the error variance is constant.  
+  
+### (c)
+  
+```{r}
+qq.r <- qqnorm(resd); qq.r
+qqline(resd)
+cor(qq.r$x, qq.r$y)
+plot(fitted, resd)
+```
+
+### (d)
+
+```{r}
+qt(0.25,15); qt(0.5,15); qt(0.75,15); qt(1,15)
+
+```
+
+### (e)
+
+To check whether if the error variance varies with the level of X, the alternatives would be:  
+
+$$\begin{cases}H_0 \;:\;  d_{i1} - d_{i2} = 0 \text{ (The variance of residuals from two groups are equal)} \\
+H_a \;:\;  d_{i1} - d_{i2} \neq 0 \text{ (The variance of residuals from two groups are not equal)}
+\end{cases}$$ at $\alpha = .05$ 
+
+The medians of the residuals in the two groups are:
+  
+```{r}
+nrow(data0306)  # Since the number of observed vaules is 16, divide the groups in to size of 8 each.
+resd1 <- resd[1:8]
+resd2 <- resd[9:16]
+d1 <- sum(abs(resd1-median(resd1)))
+d2 <- sum(abs(resd2-median(resd2)))
+d1 - d2
+s <- sqrt((sum((resd1-median(resd1))^2) + sum((resd2-median(resd2))^2) ) / nrow(data0306) - 2); s
+```
+    
+Hence the test statistic is:  
+
+$$t^*_{BF} = \frac{\bar{d_1} - \bar{d_2}}{s \sqrt{\frac{1}{n_1} + \frac{1}{n_2}}} = \frac{5.9}{2.7022 * \sqrt{\frac{1}{8} + \frac{1}{8}}} = 4.3668$$
+  
+The decision rule is:
+
+$$\begin{cases}\text{If } |t^*_{BP}| \leq  t( .95 \; ; \, 14) \text{, conclude } H_0  \\
+\text{If } |t^*_{BP}| >  t( .95 \; ; \, 14) \text{, reject } H_0 \end{cases}$$
+  
+$\chi^2( .95 \; ; \, 1)$ is:
+
+```{r}
+round(qt(.95, 14), 4)
+```  
+  
+Since $t^*_{BP} = 2.7022 > 1.7613$, reject $H_0$(conclude $H_a$). Thus, the error variance is not constant.  
+
+
