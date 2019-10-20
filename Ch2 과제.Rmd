@@ -1,0 +1,337 @@
+---
+title: "Chapter 2 Homework"
+author: "1678226 Chanmi  Yoo (유찬미)"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Regression Analysis  
+20657-02  
+Jae Keun Yoo  
+Sep 30, 2019  
+
+
+### Q2.1
+### (a)
+##### From the given information, 
+$b_{0} = 7.43119$, $b_{1} = .755048$, $n = 50$.
+##### Let's assume there is a normal error regression model: 
+$$Y_i = \beta_0 + \beta_{1}X_{i} + \varepsilon_{i}$$ 
+##### To show there is a linear relationship between X and Y, test the hypothesis 
+$$\begin{cases}H_0 \;:\; \beta_1 = 0 \\
+H_1 \;:\; \beta_1 \neq 0
+\end{cases}$$ at $\alpha = .05$.
+##### Since the 95% Confidence limits for slope($\beta_1$) are .452886 and 1.05721, 
+$$b_1 \,\pm\, t(1-\alpha/2 \; ; \, n-2) \, s{\{b_1\}} \;=\; .755048 \,\pm\, t(.975 \; ; \, 48) \, s{\{b_1\}} \;=\; .755048 \,\pm\, 2.010635 \, s{\{b_1\}} \;=\; (.452886, 1.05721).$$
+
+##### Solving the eqation above, we can gain: 
+$$s{\{b_1\}} \;=\;  0.1502819$$
+
+##### So the test statistic is: 
+$$t^{*}=\frac{b_1}{s\{b_1\}} \;=\; \frac{.755048}{0.1502819} \;=\; 5.024211$$ 
+##### The decision rule with this test statistic is:
+$$\begin{cases}\text{If } |t^{\, *}| \leq \text{ 2.010635} \text{, conclude } H_0  \\
+\text{If } |t^{\, *}| > \text{ 2.010635} \text{, reject } H_0 \end{cases}$$
+##### Since $\text{If } |t^{\, *}| > \text{ 2.010635}$, reject $H_0$.
+##### Thus, $\beta_1 \neq 0$, which means there is a linear relationship between X and Y at $\alpha \,=\, .05$.  
+
+
+### (b)
+##### The question is reasonable. Since we do not use negative unit when counting money, the minium number of dollar sales(Y) is 0. So, it is not appropriate to say the lower confidence limit for the intercept is negative. It is better to change into 0.  
+
+
+### Q2.4
+### (a)
+```{r}
+CH0204 <- read.table("Data Sets/Chapter  1 Data Sets/CH01PR19.txt"); names(CH0204) <- c("Y", "X")
+
+CH0204.lm <- lm(Y~X, data = CH0204)
+summary(CH0204.lm)
+```
+##### Therefore, the 99% confidence interval for $\beta_1$ is:
+$$ b_1 \,\pm\, t(.995 \; ; \, 118) \, s{\{b_1\}} \;=\; 0.03883 \,\pm\, 0.8391 \times 0.01277 \;=\; (.0281, \, .0495). $$
+##### Thus, with confidence coefficient .99, we estimate that the mean GPA score(Y) increases by somewhere between .0281 and .0495 scores for each additional unit in the ACT test score(X).  
+##### No, the CI(confidence interval) for $\beta_1$ does not include 0.
+##### If the CI includes zero, then there is no linear association between ACT test score(X) and GPA at the end of the freshmen year(Y). It means the director of admissions do not have to pay attention to ACT test score, when choosing students who seems more likely to do academically well at the university. 
+
+### (b)
+##### To check if there is a linear relationship between X and Y, the alternatives would be: 
+$$\begin{cases}H_0 \;:\; \beta_1 = 0 \\
+H_a \;:\; \beta_1 \neq 0
+\end{cases}$$ at $\alpha = .01$.
+##### and the test statistic is:
+$$t^{*}=3.040$$
+##### the decision rule would be: 
+$$\begin{cases}\text{If } |t^{\, *}| \leq  t( .995 \; ; \, 118) \text{, conclude } H_0  \\
+\text{If } |t^{\, *}| >  t( .995 \; ; \, 118) \text{, reject } H_0 \end{cases}$$
+
+##### $t( .995 \; ; \, 118)$ is:
+```{r}
+qt(.995, 118)
+```
+##### and $|t^{*}| >  t( .995 \; ; \, 118)$, so reject $H_0$(conclude $H_a$). Thus, there is a linear association between X and Y.
+
+### (C)
+##### The P-value of my test is 0.00292. Since $ \text{P-value} < \alpha $, reject $H_0$. The two approaches(test statistic and P-value) have the same conclusion. 
+
+
+### Q2.5
+```{r}
+CH0205 <- read.table("Data Sets/Chapter  1 Data Sets/CH01PR20.txt"); names(CH0205) <- c("Y", "X") 
+
+CH0205.lm <- lm(Y~X, data = CH0205)
+summary(CH0205.lm)
+```
+
+### (a)
+$t(1 - a/2  ; \, n-2) = t(.95  ; \, 43)$ is:
+```{r}
+round(qt(.95, 43), 4)
+```
+##### The 90% confidence interval for $\beta_1$ is:
+$$b_1 \; \pm \; t(1 - a/2  ; \, n-2)\;s\{b_{0}\} \;=\; 15.0352 \,\pm\, 1.6811 \times 0.4831 \;=\; ( 14.2231, \, 15.8473)$$
+##### Thus, with confidence coefficient .9, we estimate that the mean service time(Y) increases by somewhere between 14.2231 and 15.8473 minutes for each additional unit in the number of copiers(X).
+
+### (b)
+##### To check if there is a linear relationship between X and Y, the alternatives would be: 
+$$\begin{cases}H_0 \;:\; \beta_1 = 0 \\
+H_a \;:\; \beta_1 \neq 0
+\end{cases}$$ at $\alpha = .01$.
+##### and from the the result of the summary, the test statistic is:
+$$t^{*}=31.123$$
+##### the decision rule would be: 
+$$\begin{cases}\text{If } |t^{\, *}| \leq  t( .95 \; ; \, 43) \text{, conclude } H_0  \\
+\text{If } |t^{\, *}| >  t( .95 \; ; \, 43) \text{, reject } H_0 \end{cases}$$
+
+##### $t( .95 \; ; \, 43)$ is:
+```{r}
+round(qt(.95, 43), 4)
+```
+##### and $|t^{*}| >  t( .95 \; ; \, 43)$, so reject $H_0$(conclude $H_a$). Thus, there is a linear association between X and Y.
+##### P-value is smaller than 2e-16, which means 0+(positively approximate to 0).
+
+### (c)
+##### Yes, (a) and (b) were both concluded that there is a linear association between X and Y.
+
+### (d)
+##### To check if the slope is larger than 14, the alternatives would be: 
+$$\begin{cases}H_0 \;:\; \beta_1 \leq 14 \\
+H_a \;:\; \beta_1 > 14
+\end{cases}$$ at $\alpha = .05$.
+##### and the test statistic is:
+$$t^{*}=\frac{b_1-\beta_1}{s_\{b_1\}} = \frac{15.0352 -14}{0.4831} = 2.1428$$
+##### and since it is a one-tailed test, the decision rule would be: 
+$$\begin{cases}\text{If } |t^{\, *}| \leq  t( .95 \; ; \, 43) \text{, conclude } H_0  \\
+\text{If } |t^{\, *}| >  t( .95 \; ; \, 43) \text{, reject } H_0 \end{cases}$$
+
+##### $t( .95 \; ; \, 43)$ is:
+```{r}
+round(qt(.95, 43), 4)
+```
+##### and $|t^{*}| >  t( .95 \; ; \, 43)$, so reject $H_0$(conclude $H_a$). Thus, the standard is not satisfied by Tri-City. 
+##### The P-value is:
+```{r}
+1-round(pt(2.1428, 43), 4)
+```
+
+### (e)
+##### Yes, $b_0$ indicates the mean service time when X=0. 
+
+
+### Q2.15 
+### (a)
+```{r}
+CH0215 <- read.table("Data Sets/Chapter  1 Data Sets/CH01PR21.txt"); names(CH0215) <- c("Y", "X")
+
+CH0215.lm <- lm(Y~X, data = CH0215)
+summary(CH0215.lm)
+
+mean(CH0215$X)  # mean of X
+sum(CH0215.lm$residuals^2)/8  # MSE
+sum((CH0215$X - mean(CH0215$X))^2)  # sxx
+```
+
+##### The 99% confidence interval for $\hat{Y_h}$ is:
+$$E(\hat{Y_h}) \; \pm \; t(1 - a/2  ; \, n-2)\;s\{\hat{Y_h}\} $$
+##### When $X_h = 2$, 
+$$E(\hat{Y_h})\;=\; (10.2000 + 4.0000 * 2) = 18.2 $$ 
+
+$$t(1 - a/2  ; \, n-2) = t(.995;8) = 3.3554$$
+
+$$s^2\{\hat{Y_h}\} = MSE\begin{bmatrix}\frac{1}{n}+\frac{(X_h - \bar{X})^2}{\sum (X_i - \bar{X})^2}\end{bmatrix} = 2.2\begin{bmatrix}\frac{1}{10}+\frac{(2 - 1)^2}{10}\end{bmatrix} = 0.44$$ 
+##### so $s\{\hat{Y_h}\}$ is:
+```{r}
+round(sqrt(.44), 4)
+```
+
+##### Therefore, the 99% confidence interval for X=2 is:
+$$ 18.2 - 3.3554 \times 0.6633 \leq Y_h \leq 18.2 + 3.3554 \times 0.6633 , \text{ so }\; 15.9744 \leq Y_h \leq 20.4256$$
+##### In a similar way, the 99% confidence interval for X=4 is:
+$$ 26.2 - 3.3554 \times 1.4832 \leq Y_h \leq 26.2 + 3.3554 \times 1.4832 , \text{ so }\; 21.2233 \leq Y_h \leq 31.1767$$ 
+
+##### $s\{\hat{Y_h}\}$ when X=4 is:
+$$s^2\{\hat{Y_h}\} = 2.2\begin{bmatrix}\frac{1}{10}+\frac{(4 - 1)^2}{10}\end{bmatrix} = 2.2$$ 
+```{r}
+round(sqrt(2.2), 4)
+```
+
+
+##### With confidence coefficient .99, when there are 2 transfers, the mean number of breakage would be somewhere between 15.9744 and 20.4256; when X=4, it would be somewhere between 21.2233 and 31.1767. 
+
+### (b)
+$$s^2\{pred\} = 2.2\begin{bmatrix}1+\frac{1}{10}+\frac{(2 - 1)^2}{10}\end{bmatrix} = 2.64$$
+##### $s\{pred\} = 1.6248$
+##### So, the 99% prediction interval for new observation is:
+$$ 18.2 - 3.3554 \times 1.6248 \leq Y_{h(new)} \leq 18.2 + 3.3554 \times 1.6248 , \text{ so }\; 12.7482 \leq Y_h \leq 23.6519$$
+##### It can be predicted, with 99% confidence, that the number of ampules for the next 2 shifts will be somewhere  between 12.7482 and 23.6519.
+
+### (c)
+$$s^2\{predmean\} = 2.2\begin{bmatrix}\frac{1}{3}+\frac{1}{10}+\frac{(2 - 1)^2}{10}\end{bmatrix} = 1.083$$
+
+##### $s\{predmean\} = 1.0832$
+##### So, the 99% prediction interval for the mean broken ampules per shipment is:
+$$ 18.2 - 3.3554 \times 1.0832 \leq \bar{Y}_{h(new)} \leq 18.2 + 3.3554 \times 1.0832 , \text{ so }\; 14.5654 \leq \bar{Y}_{h(new)} \leq 21.8346$$
+##### Therfore, the 99% prediction interval for the total number of broken ampules in three shipments is:
+$$ 44 = 3 \times 14.5654 \leq \text{Total number of broken ampules} \leq 3 \times 21.8346 = 65$$
+
+##### It can be predicted, with 99% confidence, that between 44 and 65 ampules will be needed to be broken for three shiftments of 2 units each. 
+
+### (d)
+$$ W^2 =  2F(1-\alpha \;;\, 2, n-2) = 2F(.99; 2, 8) = 2(8.649)= 17.298$$
+$$ W = 4.159 $$
+
+##### The 99% confidnece band for the regression line when $X_h = 2$ is:
+$$18.2 \pm 4.159(.663), \; 15.443 \leq \beta_0 + \beta_1 X_h \leq 20.957$$
+
+##### The 99% confidnece band for the regression line when $X_h = 4$ is:
+$$26.2 \pm 4.159(1.4832), \; 20.032 \leq \beta_0 + \beta_1 X_h \leq 32.368$$
+
+##### Yes, the confidence band is wider than the confidence interval from (a). 
+##### Yes, it should be wider. It is because the confidence band covers the entire regression line over all real-numbered values of X from $-\infty$ to $\infty$, whereas the confidence limits can be applied to only single level of $X_h$. 
+
+
+### Q2.24
+### (a)
+```{r}
+CH0224 <- read.table("Data Sets/Chapter  1 Data Sets/CH01PR20.txt"); names(CH0224) <- c("Y", "X")
+
+CH0224.aov <- aov(Y~X, data = CH0224)
+CH0224.aov
+summary(CH0224.aov)
+```
+
+### (b)
+##### To determine whethere there is a linear association between time spent and the number of copiers serviced, the alternatives would be:
+$$ H_0 : \beta_1  = 0 \\
+H_a :  \beta_1  \neq 0$$
+
+##### From the ANOVA table above, the test statistic is:
+$$ F^* = F(1-\alpha \; ; \,1, n-2) = 968.7$$
+##### The decision rule is:
+$$ \begin{cases} If \; F^* \leq F(.9; 1,43), \text{ conclude } H_0 \\
+If \; F^* > F(.9; 1,43), \text{ reject } H_0
+\end{cases}$$
+
+##### Since $ F^* > F(.9; 1,43) = 2.826 $, reject $H_0$. Thus, there is a linear relationship between time spent and the number of copiers.
+
+### (c)
+```{r}
+CH0224.lm <- lm(Y~X, data=CH0224)
+summary(CH0224.lm)$r.squared
+```
+##### $R^2$ is 0.9575. It is coefficient of determination.  
+
+### (d)
+```{R}
+sqrt(0.9575)
+```
+##### r is +.9785.  
+
+### (e)
+$R^2$ has the more clear-cut operational interpretation than $r$, because $R^2$ can expalin both simple linear regressions and also for multiple linear regressions whereas $r$ can only explain the simple linear regression.  
+  
+  
+### Q2.29
+### (a)
+```{r}
+CH0229 <- read.table("Data Sets/Chapter  1 Data Sets/CH01PR27.txt"); names(CH0229) <- c("Y", "X")
+
+CH0229.lm <- lm(Y~X, data = CH0229)
+summary(CH0229.lm)
+
+Yi_Y.hat <- CH0229$Y-CH0229.lm$fitted.values
+Y.hat.i_Y.bar <- CH0229.lm$fitted.values-mean(CH0229$Y) 
+
+matrix <- data.frame(cbind(CH0229$X, Yi_Y.hat, Y.hat.i_Y.bar))
+names(matrix) <- c("Xi", "Yi_Y.hat", "Y.hat.i_Y.bar")
+matrix <- matrix[order(matrix$Yi_Y.hat, decreasing = F), ]
+
+head(matrix) 
+
+```
+
+##### SSR seems larger than SSE. 
+
+### (b)  
+##### 
+```{r}
+CH0229.aov <- aov(Y~X, data = CH0229)
+CH0229.aov
+summary(CH0229.aov)
+```
+  
+
+### (c)  
+##### 
+  
+  
+### Q2.33
+### (a)
+The alternatives would be:
+$$ H_0 : \beta_1  = 0 \\
+H_a :  \beta_1  \neq 0$$
+
+##### From the ANOVA table above, the test statistic is:
+$$ F^* =  174.1$$
+##### The decision rule is:
+$$ \begin{cases} If \; F^* \leq F(.9; 1,58), \text{ conclude } H_0 \\
+If \; F^* > F(.9; 1,58), \text{ reject } H_0
+\end{cases}$$
+
+##### Since $ F^* > F(.9; 1,58) =  2.794 $, reject $H_0$. Thus, there is a linear relationship between X and Y.  
+  
+### (d)
+##### It means SSE.
+
+```{r}
+CH0229.lm <- lm(Y~X, data=CH0229)
+1- summary(CH0229.lm)$r.squared
+```
+
+### (e)
+```{r}
+R_2 <- summary(CH0229.lm)$r.squared
+-sqrt(R_2)
+```
+
+
+### Q2.33
+### (a)
+The alternatives would be:
+$$ H_0 : \beta_0  = 7.5 \; thousand \;dollars \\
+H_a :  \beta_0  \neq 7.5 \; thousand \;dollars$$
+  
+### (b)
+The full model is: 
+$$ Y_i = \beta_0 + \beta_1 X_i + \varepsilon_i   $$
+The reduced model is:
+$$ Y_i = \beta_0 + \varepsilon_i $$
+
+
+### (c)
+No, we cannot tell the test statistic. 
