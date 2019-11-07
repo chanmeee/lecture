@@ -1,0 +1,97 @@
+---
+title: '빅데이터를이용한통계그래픽스 HW #4'
+author: "1678226 유찬미 (Chanmi Yoo)"
+date: "2019년 11월 8일"
+output: word_document
+---
+
+######  * nycflights13 패키지에 있는 flights 자료를 이용   
+
+
+```{r setup}
+# Load Packages
+library(tidyverse)
+library(nycflights13)
+
+# Load Data
+data("flights")
+```
+
+
+
+######  1. flights자료에서 출발이 2시간 이상 늦어진 비행 자료 중 year, month, day, dep_delay, arr_delay, carrier, origin, dest 만을 뽑아서 Late2에 저장하시오.    
+
+
+```{r}
+Late2 <- flights %>% 
+  filter(dep_delay >= 2*60) %>% 
+  select(year, month, day, dep_delay, arr_delay, carrier, origin, dest)
+```
+
+  
+######  2. flights 자료에서 뉴욕에서 시카고로의 비행만을 뽑아서 Chicago에 저장하시오.  
+######  - Chicago의 공항코드: ORD, MDW  
+######  - 자료 중 year, month, day, dep_delay, arr_delay, carrier, origin, dest만을 저장  
+
+```{r}
+Chicago <- flights %>% 
+  filter(dest %in% c('ORD', "MDW")) %>% 
+  select(year, month, day, dep_delay, arr_delay, carrier, origin, dest)
+```
+ 
+    
+######  3. flights 자료에서 2013년 1년간 출발이 2시간 이상 늦어진 비행이 가장 많은 항공사를 알아보려고 한다. Late2 자료를 이용하여 각 항공사별로 2시간이상 늦어진 비행 건수를 구하고 이를 건수가 많은 항공사부터 나열하시오.  
+
+```{r}
+Late2 %>% 
+  group_by(carrier) %>% 
+  summarise(count = n()) %>% 
+  arrange(desc(count))
+```
+  
+  
+######  4. 30분 이상 늦게 출발했으나 늦어진 출발시간 중 10분 이상을 비행으로 단축한 비행을 추출하여 비행거리가 큰 순서대로 나열하시오.
+######  - month, day, distance, dest, dep_delay,arr_delay 만 표시  
+
+```{r}
+flights %>% 
+  filter(dep_delay >= 30) %>%  
+  select(month, day, distance, dest, dep_delay, arr_delay) %>% 
+  mutate(delay = dep_delay - arr_delay) %>%  
+  filter(delay >= 10) %>%  
+  arrange(desc(distance))
+```
+  
+   
+######  5. 60분 이상의 출발지연 건수가 가장 많은 달을 찾고 해당 달에 어떤 항공사(carrier)가 60분 이상의 지연이 가장 많은지를 알아보고자 한다. 이를 위한 코드를 작성하고 해당 달, 항공사를 찾으시오.  
+
+```{r}
+flights %>% 
+  filter(dep_delay >= 60) %>% 
+  group_by(month) %>% 
+  summarise(count = n()) 
+
+flights %>% 
+  filter(dep_delay >= 60 & month == 7) %>% 
+  group_by(carrier) %>% 
+  summarise(count = n()) %>% 
+  arrange(desc(count))
+```
+  
+[결과] 60분 이상 출발지연 건수가 가장 많은 달은 7월(3877건)이다. 7월에 60분 이상 출발지연이 가장 많았던 항공사는 EV(787회)이다.    
+   
+   
+######  6. 여름 (6,7,8월)에 도착지별로 출발이 지연되는 정도를 파악하고자 한다. 비행의 도착지 별로 월평균 출발지연시간을 구하고 이를 적절한 그림으로 나타낸 후 그림을 해석하시오.  
+
+```{r}
+montly_delay <- flights %>% 
+  filter(month %in% c(6:8)) %>% 
+  group_by(dest, month) %>% 
+  summarise(delay_avg = mean(dep_delay, na.rm = T))
+
+ggplot(montly_delay, aes(delay_avg)) +
+  geom_histogram(bins = 30) +
+  facet_wrap(~month)
+```
+ 
+ [설명] 6, 7월에는 약 20분, 8월은 약 10분의 출발지연이 발생한 도착지가 많았다.  
