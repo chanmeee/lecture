@@ -1,0 +1,132 @@
+---
+title: '빅데이터를이용한통계그래픽스 HW #5'
+author: "1678226 유찬미 (Chanmi Yoo)"
+date: "2019년 11월 15일"
+output: word_document
+---
+
+###### * tidyverse 에서 제공하는 table3 자료를 이용 
+
+```{r setup}
+# Load Packages
+library(tidyverse)
+library(dplyr)
+
+# Load Data
+data("table3")
+```
+
+
+###### 1. 각 연도별, 나라별, TB 수를 뽑아내시오. 
+
+```{r}
+tb1 <- table3 %>% 
+  separate(rate, into=c('cases', 'population'), sep='/', convert = T) %>% 
+  select(year, country, cases)
+tb1 
+```
+
+  
+###### 2. 각 연도별, 나라별로 population 수를 뽑아내시오.
+
+```{r}
+tb2 <- table3 %>% 
+  separate(rate, into = c('cases', 'population'), sep = '/', convert = T) %>% 
+  select(year, country, population)
+tb2
+```
+ 
+    
+###### 3. 1,2의 결과를 이용하여 비율을 계산하시오.    
+
+```{r}
+tb3 <- tb1 %>% 
+  left_join(tb2, by = c('year', 'country')) %>% 
+  mutate(rate = cases/population)
+tb3
+```
+  
+  
+###### 4. 시간에 따른 TB 수의 변화를 나라별로 나타내는 그림을 그리시오.   
+
+```{r}
+ggplot2::ggplot(tb3, aes(year, cases)) +
+  geom_line(aes(group=country)) +
+  geom_point(aes(color=country))
+```
+   
+   
+######  5. gather()과 spread()는 대칭적인 함수인가? 아래의 예를 실행시켜보고 이를 이용하여 설명하시오.   
+
+```{r}
+stocks <- tibble(   
+  year   = c(2015, 2015, 2016, 2016), 
+  half  = c(   1,    2,     1,    2),   
+  return = c(1.88, 0.59, 0.92, 0.17) 
+  )
+stocks
+stocks %>%  
+  spread(year, return) %>%  
+  gather("year", "return", `2015`:`2016`) 
+```
+ 
+ [설명] spread 함수를 적용한 뒤 gather 함수를 적용했더니, 변수들이 그대로 유지되었다. 다만, 변수명으로 쓰인 year가 double에서 character로 바뀌었으며, 열의 배열 순서가 바뀌었다.  
+
+
+##### * nycflights13 패키지에 있는 flights 자료를 이용하여 각 상황에 맞는 비행을 모두 찾으시오.  
+
+```{r}
+library(nycflights13)
+data(flights)
+```
+
+
+##### 6. dep_time과 sched_dep_time은 특수한 형태로 저장된 자료이다. (519는 5시 19분을 나타냄). 이 두 변수의 시간을 자정을 기준으로 몇 분 후인지를 나타내는 dep_time_min과 sched_dep_time_min을 만드시오.  
+
+```{r}
+flights %>% 
+  mutate(dep_time, dep_time_min = (dep_time%/%100)*60 + (dep_time%%100)) %>% 
+  mutate(sched_dep_time, sched_dep_time_min = (sched_dep_time%/%100)*60 + (sched_dep_time%%100))
+```
+
+
+##### 7. 가장 delay 건수가 많은 도착공항은? (여기서 delay는 dep_delay, arr_delay 모두를 고려) 가장 departure delay 가 많은 공항은? 가장 arrival delay 가 많은 공항은? 
+
+```{r}
+not_cancelled <- flights %>% 
+  filter(!is.na(dep_delay), !is.na(arr_delay))
+
+# 총 delay 건수 
+not_cancelled %>%  
+  group_by(dest) %>% 
+  summarise(n_delay = sum(dep_delay >0) + sum(arr_delay >0)) %>%
+  arrange(desc(n_delay))
+
+# departure delay 건수 
+not_cancelled %>%  
+  group_by(dest) %>% 
+  summarise(n_dep_delay = sum(dep_delay > 0)) %>% 
+  arrange(desc(n_dep_delay))
+
+# arrival delay 건수 
+not_cancelled %>%  
+  group_by(dest) %>% 
+  summarise(n_arr_delay = sum(arr_delay > 0)) %>% 
+  arrange(desc(n_arr_delay))
+```
+
+[답] 전체적으로 delay가 가장 많이 일어나는 공항은 ATL이다. 가장 departure delay가 많은 공항은 LAX이고, 가장 arrival delay가 많은 공항은 ATL이다.  
+
+  
+##### 8. 자료가 잘못 입력되었다고 의심될 만큼 빠르거나 느린 비행이 있는지 살펴보려고 한다. 이를 위해 필요한 변수를 만들고 살펴보시오. 
+
+```{r}
+flights%>% 
+  mutate(sched_time = (sched_arr_time%/%100*60 + sched_arr_time%%100) - (sched_dep_time%/%100*60 + sched_dep_time%%100)) %>%  # sched_time: 예정된 비행시간(분 단위)
+  mutate(gap = air_time - sched_time) %>% # gap: 예정된 비행시간과 실제 비행시간의 차이 
+  ggplot2::ggplot(aes(gap)) +
+  geom_histogram(na.rm = T)  
+```
+  
+ [해석] 위 히스토그램은 예정 비행시간과 실제 비행시간의 차이를 나타낸 것으로, 대부분 0 근처의 값을 가진다. 즉, 예정 비행시간대로 이동한 경우가 대부분이다. 그런데 일부 자료가 1500 정도 값을 가진다. 즉, 실제 비행시간과 예정 비행시간이 약 1500분이라는 극단적 차이를 보인다. 이는 일어날 가능성이 굉장히 희박하며, 자료가 잘못 입력되었을 가능성이 높다. 
+
