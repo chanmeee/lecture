@@ -1,0 +1,73 @@
+---
+title: 'HW #6'
+author: '1678226 Chanmi Yoo(유찬미)'
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Load library 
+library(tidyverse)
+```
+
+1. who 자료 중 2006 ~ 2010의 자료만을 뽑아 NewWho에 저장하시오.
+
+```{r}
+NewWho <- who %>% 
+  filter(year %in% 2006:2010)
+```
+
+2. NewWho자료를 아래의 기준에 따라 tidy data로 변형하여 NewwhoTidy에 저장하시오.  
+- type: TB type으로 변수이름의 두 번째 부분 (sp, rel, sn, ep) 
+- gender:  성별 - ageL, ageU: age group의 하한과 상한을 의미하며 65세 이상 그룹에서는 ageU를 100으로 함 
+- age: ageL과 ageU의 평균 값 
+
+```{r}
+NewwhoTidy <- NewWho %>% 
+  # new_sp_m014부터 newrel_f65 변수를 합치기 
+  gather(new_sp_m014:newrel_f65, key="key", value="value", na.rm=T) %>% 
+  # newrel new_rel로 변환 
+  mutate(key = str_replace(key, 'newrel', 'new_rel')) %>% 
+  # key열을 new, type, sexage열로 나누기 
+  separate(key, into=c('new', 'type', 'sexage'), sep='_') %>%
+  # iso2, iso3, new열 삭제 
+  select(-iso2, -iso3, -new) %>% 
+  # sexage열을 sex, age 열로 나누기 
+  separate(sexage, into = c('gender', 'age'), sep = 1) %>% 
+  # ageL열의 빈 값을 65으로 변경, ageU열의 65값을 100으로 변경 
+  mutate(age = str_replace(age, '014', '0014'),
+         age = str_replace(age, '65','65100')) %>% 
+  # age열을 ageL과 ageU로 나누기 
+  separate(age, into = c('ageL', 'ageU'), sep = 2, convert = T) %>% 
+  # age열 생성 
+  mutate(age = (ageL + ageU)/ 2) %>% 
+  # 열 배열 순서 변경 
+  select(country, year, type, gender, ageL, age, ageU, value)
+
+head(NewwhoTidy)
+tail(NewwhoTidy)
+```
+
+3. 2에서 만든 NewWhoTidy 자료를 이용하여 나라별, type별, 연도별로 TB 수의 합을 구하고 각 연도별, type별로 구한 TB 수가 가장 큰 나라를 찾으시오.
+
+```{r}
+NewwhoTidy %>% 
+  group_by(country, type, year) %>% 
+  summarise(value.count = sum(value)) %>% 
+  group_by(year) %>% 
+  mutate(rank = dense_rank(desc(value.count))) %>% 
+  filter(rank==1) 
+# [결론] 매년 인도가 가장 많다. 
+
+NewwhoTidy %>% 
+  group_by(country, type, year) %>% 
+  summarise(value.count = sum(value)) %>% 
+  group_by(type) %>% 
+  mutate(rank = dense_rank(desc(value.count))) %>% 
+  filter(rank==1) 
+# [결론] sn은 중국, ep와 sp는 인도가 가장 많다. 
+```
+
