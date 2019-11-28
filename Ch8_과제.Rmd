@@ -1,0 +1,353 @@
+---
+title: "과제#7  Chapter.8"
+author: "1678226 Chanmi Yoo(유찬미)"
+date: 'Nov 28 2019'
+output: html_document
+---
+
+## 8.4
+
+```{r}
+a <- read.table("../Data Sets/Chapter  1 Data Sets/CH01PR27.txt")
+names(a) <- c("y","x")
+x1 <- a$x - mean(a$x)
+a <- data.frame(a, x1=x1)
+fit4 <- lm(y~x1+I(x1^2), data=a)
+fit4
+summary(fit4)
+anova(fit4)
+```
+
+### (a) 
+
+```{r}
+## [Regression model] Y_hat = 82.9357 - 1.18396 * x + 0.01484 * x^2
+plot(a$x, a$y, xlab="age", ylab="muscle mass")
+lines(smooth.spline(a$x, fit4$fitted.values), col='darkgreen', lwd=3)
+## The quadratic regression seems to be a good fit.
+## [R-square] .7632 
+```
+
+### (b) 
+
+```{r}
+## MSE = 8.026^2 = 64.4167
+## MSR = 91.84 * 64.4167 = 5916.03
+
+## [Alternatives] H0: B1 = B11 = 0 (there is no linear relation.)  vs H1: Not both B1 and B2 is 0.
+## [Decision rule] If F* <= F(.95; 2, 57), conclude H0. Otherwise, conclude H1.
+## [Conclusion] Since F* = 91.84 > 3.158843, conclude H1.
+```
+
+### (c) 
+
+```{r}
+esti <- cbind(a, predict.lm(fit4, newdata=a, se.fit=TRUE, interval="confidence",
+                            data=a))
+
+a$x1[a$x==48]
+82.93575 + (-1.18396)*(-11.98333) + 0.01484*(-11.98333)^2 
+esti$se.fit[esti$x==48]
+
+## y.hat = 99.25456
+## se{y.hat} = 1.483295
+## t(.975;57) = 2.002465
+## [confidence interval] 99.25456 -/+ 2.002465*1.483295 = (96.28431, 102.2248)
+```
+
+### (d) 
+
+```{r}
+## se{pred} = 8.16144
+## [prediction interval] 99.25456 -/+ 2.002465*8.16144 = (82.91156, 115.5976)
+```
+
+### (e)
+
+```{r}
+## SSR(x^2|x) = 203.1, SSE(x,x^2) = 3671.3
+
+## [Alternatives] H0: B11 = 0 (quadratic term can be dropped.)  vs H1: B11 is not 0.
+## [Test statistic] F* = (203.1/1)/(3671.3/57) = 3.153297
+## [Critical value] F(.95; 1, 57) = 4.009868
+## [Decision rule] If F* <= F(.95; 1, 57), conclude H0. Otherwise, conclude H1.
+## [Conclusion] Since F* = 3.153297 <= 4.009868, conclude H0.
+```
+
+### (f) 
+
+```{r}
+fit4.11 <- lm(y~x+I(x^2), data = a)
+fit4.11
+## [regression function in original X] Y_hat = 207.34961 - 2.96432 * X + .01484 * X^2 
+```
+
+### (g)
+
+```{r}
+cor(a$x,a$x^2); cor(a$x1,a$x1^2)
+## cor(X, X^2) = .9961, cor(x,x^2) = -0.0384
+## YES, the use of a centered variable is helpful because we can avoid the multi-collinearity problem. 
+```
+
+## 8.5
+### (a)
+
+```{r}
+fit4$residuals
+## fitted-residual scatterplot
+plot(fit4$fitted.values, fit4$residuals, xlab = 'Fitted', ylab = 'Residual')
+## x-residual scatterplot
+plot(a$x, fit4$residuals, xlab = 'X', ylab = 'Residual')
+## normal probability plot
+qqnorm(fit4$residuals)
+qqline(fit4$residuals)
+```
+
+### (b)
+
+```{r}
+fit4.reduced <- lm(y~x1+I(x1^2), data = a)
+summary(fit4.reduced)
+fit4.full <- lm(y~x1+I(x1^2)+x1*I(x1^2), data = a)
+anova(fit4.reduced, fit4.full)
+## MSLF = 62.8154
+## MSPE = 66.0595
+
+## [Alternatives] H0: E{Y} = B0 + B1*x + B11*x^2 (reduced model)  vs H1: E{Y} =/= B0 + B1*x + B11*x^2 (full model)
+## [Test statistic] F* = 62.8154 / 66.0595 = 0.9508912
+## [Critical value] F(.95; 29, 28) = 1.875188
+## [Decision rule] If F* <= F(.95; 29, 28), conclude H0. Otherwise, conclude H1.
+## [Conclusion] Since F* = 0.9508912 <= 1.875188, conclude H0.
+```
+
+### (c)
+
+```{r}
+fit4.111 <- lm(y~x1+I(x1^2)+I(x1^3), data=a)
+fit4.111; anova(fit4.111)
+
+## SSR(x^3 | x, x^2) = 8.5, SSE(x, x^2, x^3) = 3662.8
+
+## [Alternatives] H0: B111 = 0  vs H1: B111 is not 0.
+## [Test statistic] F* = (8.5 / 1) / (3662.8 / 56) = 0.1299552
+## [Critical value] F(.95; 1, 56) = 4.012973 
+## [Decision rule] If F* <= F(.95; 1, 56), conclude H0. Otherwise, conclude H1.
+## [Conclusion] Since F* = 0.1299552 <= 4.012973, conclude H0.
+
+## YES, it is consistent with (b).
+```
+
+## 8.8 
+
+```{r}
+b <- read.table("../Data Sets/Chapter  6 Data Sets/CH06PR18.txt")
+names(b) <- c("Y","X1","X2","X3","X4")
+x1 <- b$X1 - mean(b$X1)
+b <- data.frame(b, x1=x1)
+fit8.124 <- lm(Y~x1+I(x1^2)+X2+X4, data=b)
+```
+
+### (a)
+
+```{r}
+plot(b$Y, fit8.124$fitted.values, xlab = 'Y', ylab = 'Fitted')
+lines(smooth.spline(b$Y, fit8.124$fitted.values), col='darkgreen', lwd=3)
+## YES, it seems to provide a good fit.
+```
+
+### (b)
+
+```{r}
+summary(fit8.124)
+## adjusted R-square: 0.5927 
+## Including x1, X2, X4 is too much, predictors should be selected. 
+```
+
+### (c)
+
+```{r}
+anova(lm(Y~x1+X2+X4+I(x1^2), data=b))
+
+## SSR(x1^2 | x, X2, X4) = 7.115, SSE(x, x^2, X2, X4) = 91.535 
+
+## [Alternatives] H0: B11 = 0 (the square of centered property age can be dropped) vs. H1: B11 is not 0.
+## [Test statistic] F* = (7.115 / 1) / (91.535 / 76) = 5.907467
+## [Critical value] F(.95; 1, 76) = 3.96676
+## [Decision rule] If F* <= F(.95; 1, 76), conclude H0. Otherwise, conclude H1.
+## [Conclusion] Since F* > 3.96676, conclude H1. Thus, B11 is not 0.
+## [P-value] 0.0174321
+```
+
+### (d)
+
+```{r}
+plot(b$x1, fit8.124$fitted.values, xlab = 'X', ylab = 'Fitted')
+lines(smooth.spline(b$x1, fit8.124$fitted.values), col='darkgreen', lwd=3)
+
+esti.b <- cbind(b, predict.lm(fit8.124, newdata=b, se.fit=TRUE, interval="confidence",
+                            data=b))
+b$x1[b$X1==8]
+1.019e+01+ (-1.818e-01)*0.1358025 + 1.415e-02*0.1358025^2 + 3.140e-01*16 + 8.046e-06*250000
+esti.b$se.fit[esti.b$X1==8]
+
+## y.hat = 17.20107
+## se{y.hat} = 0.281886
+## t(.975;76) = 1.991673
+## [confidence interval] 17.20107 -/+ 1.991673*0.281886 = (16.63965, 17.76249)
+## {Interpret} the probaility of containing the exact mean between (16.63965, 17.76249) is 0.95.
+```
+
+### (e)
+
+```{r}
+fit8.1124 <- lm(Y~X1+I(X1^2)+X2+X4, data = b)
+fit8.1124
+## [regression function in original X] Y_hat = 1.249e+01 -4.043e-01 * X1 + 1.415e-02 * X1^2 + 3.140e-01 * X2 + 8.046e-06 * X4
+```
+
+
+## 8.15
+
+```{r}
+c <- read.table("../Data Sets/Chapter  1 Data Sets/CH01PR20.txt")
+X2 <- read.table("../Data Sets/Chapter  8 Data Sets/CH08PR15.txt")
+c <- data.frame(c, X2)
+names(c) <- c("Y","X1","X2")
+
+c2 <- c; c2$X2 <- as.factor(c2$X2)
+
+fit15 <- lm(Y~X1*X2, data=c2)
+fit15.1 <- lm(Y~X1, data=c)
+fit15.2 <- lm(Y~X1+X2, data=c2); summary(fit15.2)
+
+anova(fit15); anova(fit15.1); anova(fit15.2)
+```
+
+### (a)
+
+```{r}
+## For small copier, X2 = 0 and hence X1*X2 = 0. Response function therefore becomes for small copier is E{Y} = B0 + B1*X1.
+## ## For large copier, X2 = 1 and hence X1*X2 = X1. Response function therefore becomes for small copier is E{Y} = B0 + B1*X1 + B2 + B11*X1 = (B0 + B2) + (B1+B11)*X1
+```
+
+### (b)
+
+```{r}
+## [regression function] Y_hat = -0.9225 + 15.0461 * X1 + 0.7587 * X2
+```
+
+### (c)
+
+```{r}
+anova(fit15.2)
+## SSR(X2 | X1) = 6, SSE(X1, X2) = 3410 
+
+## [Alternatives] H0: B2 = 0  vs H1: B2 is not 0.
+## [Test statistic] F* = (6 / 1) / (3410 / 42) = 0.07390029
+## [Critical value] F(.95; 1, 42) = 4.072654 
+## [Decision rule] If F* <= F(.95; 1, 42), conclude H0. Otherwise, conclude H1.
+## [Conclusion] Since F* = 0.07390029 <= 4.072654, conclude H0. Thus, B2 is 0.
+```
+
+
+### (d)
+
+```{r}
+## In order to check the effect of type of copier model, we test if there is an interaction between X1 and X2. 
+```
+
+### (e)
+
+```{r}
+## interaction term-residual scatterplot
+plot(c$X1*c$X2, fit15$residuals, xlab = 'X1*X2', ylab = 'Residual')
+## [Implication] The categorical variable is not statistically significant. 
+```
+
+
+## 8.19
+
+```{r}
+fit19 <- lm(Y~X1+X2+I(X1*X2), data=c)
+fit19
+summary(fit19); anova(fit19)
+```
+
+### (a)
+
+```{r}
+## [fitted regression model] y_hat = 2.813 + 14.339 *X1 + (-8.141)*X2
+```
+
+### (b)
+
+```{r}
+## SSE(X1*X2 | X1, X2) = 256, SSR(X1,X2,X1*X2) = 3154
+
+## [Alternatives] H0: B12 = 0 (interaction term can be dropped.) vs H1: B12 is not 0.
+## [Test statistic] F* = (256 / 1) / (3154 / 41) = 3.327838
+## [Critical value] F(.90; 1, 41) = 2.832078
+## [Decision rule] If F* <= F(.90; 1, 41), conclude H0. Otherwise, conclude H1.
+## [Conclusion] Since F* = 3.327838 > 2.832078, conclude H1. 
+## [P-value] 0.07549
+
+## [Description] The interaction effect cannot be dropped from the model. It means the gap between small copiers and large copiers will be changing.  
+```
+
+## 8.33
+
+```{r}
+d <- read.table("../Data Sets/Chapter  8 Data Sets/CH08PR06.txt")
+
+names(d) <- c("Y","X")
+fit33 <- lm(Y~X1+X2+I(X1*X2), data=c)
+fit33
+summary(fit33); anova(fit33)
+```
+
+### (a)
+
+```{r}
+## 
+```
+
+### (b) 
+### (1) 
+
+```{r}
+## [Alternatives] H0: B12 = B23 = B31 = 0 (second-order regrssion functions for three intruments are identical.) vs H1: Not all B12, B23, B31 is 0.
+## [Test statistic] F* = (256 / 1) / (3154 / 41) = 3.327838
+## [Critical value] F(.90; 1, 41) = 2.832078
+## [Decision rule] If F* <= F(.90; 1, 41), conclude H0. Otherwise, conclude H1.
+## [Conclusion] Since F* = 3.327838 > 2.832078, conclude H1. 
+## [P-value] 0.07549
+```
+
+
+## 8.34
+
+### (a)
+
+```{r}
+## [first-order regression model] : Yi = B0 + B1*X1 + B2*Xi2 + B3*Xi3 + {epsilon}i
+## [first-order regression model with Interactions added] : Yi = B0 + B1*X1 + B2*Xi2 + B3*Xi3 + B12*X1*Xi2 + B13*X1*Xi3 + B23*Xi2*Xi3 + {epsilon}i
+```
+
+### (b)
+
+```{r}
+## The Response functions (without interaction effect) for three types of banks are:
+## Commerical: E{Y} = (B0 + B2) + B1*X1 
+## Mutual savings: E{Y} = (B0 + B3) + B1*X1
+## Savings and loan: E{Y} = (B0 - B2 - B3) + B1*X1
+```
+
+### (c)
+
+```{r}
+# (1) B2 : Without interaction effect, moving nothing to "Commerical", the intercept changes by B2. 
+# (2) B3 : Without interaction effect, moving nothing to "Mutual savings", the intercept changes by B3. 
+# (3) -B2-B3 : Without interaction effect, moving nothing to "Savings and loan", tthe intercept changes by (-B2-B3).
+```
+
