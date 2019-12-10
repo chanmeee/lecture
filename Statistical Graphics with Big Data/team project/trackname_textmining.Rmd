@@ -1,0 +1,277 @@
+---
+title: "trackname_textmining"
+author: "Chanmi Yoo"
+date: '2019 12 10 '
+output: html_document
+---
+
+### Load library 
+
+```{r}
+library(tidyverse)
+library(data.table)
+```
+
+### Load Data
+
+```{r}
+setwd("C:/Users/Chanmi Yoo/Desktop/빅데/팀프로젝트/data")
+spotify <- fread("SpotifyFeatures.csv", encoding = "UTF-8")
+```
+
+### Preprocessing
+### 1) NA 값 확인 
+
+```{r}
+table(is.na(spotify))
+```
+
+[설명] 결측치가 전혀 없다. 
+
+
+### 2) 중복 음원 제거 
+
+```{r}
+spotify.uniq <- spotify[-which(duplicated(spotify$track_id)),]
+dim(spotify.uniq)
+```
+
+[설명] 총 176774개 음원이 있다. 
+
+
+## Creating Word Cloud - Track Title
+### [가설] 노래 제목으로 가장 많이 나오는 단어는 love일 것이다. 
+
+
+### Load Library 
+
+```{r}
+library(tm)
+library(wordcloud)
+library(RColorBrewer)
+
+# Expand memory limit
+memory.limit(9999999999999)
+```
+
+### Create text1 vector 
+데이터가 너무 커서 단어를 추출하는 데 시간이 오래 소요된다. 그래서 text11(60000개), text12(60000개), text13(56774개), 3등분하여 Corpus를 처리하였다. 
+
+```{r}
+text1 <- spotify.uniq %>% 
+  mutate(rank=row_number(desc(popularity))) %>% 
+  filter(rank %in% 1:60000) %>% 
+  select(track_name)
+
+text2 <- spotify.uniq %>% 
+  mutate(rank=row_number(desc(popularity))) %>% 
+  filter(rank %in% 60001:120000) %>% 
+  select(track_name) 
+
+text3 <- spotify.uniq %>% 
+  mutate(rank=row_number(desc(popularity))) %>% 
+  filter(rank %in% 120001:176774) %>% 
+  select(track_name) 
+
+# 노래 제목이 아닌 단어를 제거 
+# 1) featuring 정보 제거
+# 어떠한 형태로 되어 있는지 확인: tail(str_subset(get(paste("text", i, sep=""))$track_name, regex('feat', ignore_case = T)), 10)
+## [설명] featuring 정보는 대부분 "(feat. [가수])", "(Feat. [가수])", "[FEAT. [가수]]"의 형태로 들어간다. 
+text1 <-  text1 %>% 
+  str_replace("[[:blank:]]{1}[fF]{1}(eat)[[:print:]]+", "") %>% 
+  str_replace_all("[[:blank:]]{1}(FEAT.)[[:print:]]+", "")
+
+# 2) remaster 정보 제거 
+#tail(str_subset(text1, regex('remaster', ignore_case = T)), 10)
+## [설명] remastered 정보는 대부분 "- Remastered" " - Remasterizado [연도]" 의 형태로 들어간다. 
+text1 <- text1 %>% 
+  str_replace_all("(Remastered) +", "") %>% 
+  str_replace_all("[0-9]{4}[[:space:]]{1}(Remaster)", "") %>% 
+  str_replace_all("(-)[[:space:]]{1}(Remasterizado)[[:space:]]{1}[0-9]{4}", "") %>% 
+  str_replace_all("(- Remastered)", "") %>% 
+  str_replace_all("(Remastered)", "") %>% 
+  str_replace_all("(- Remaster)", "") %>% 
+  str_replace_all("[0-9]{4}[[:print:]](Remaster)", "") %>% 
+  str_replace_all("[0-9]{4}( Digital Remaster)+", "") %>% 
+  str_replace_all("[-(]{1}[[:print:]]+", "")
+
+# 3) version 정보 제거 
+#tail(str_subset(text1$track_name, regex('version', ignore_case = T)), 10)
+## [설명] version 정보는 " - [문자] Version " 혹은 " ( [문자] version ) 의 형태로 들어간다. 
+text1 <- text1 %>% 
+  str_replace_all("(-)[[:space:]][[:print:]]+[Vv]{1}(ersion)", "") %>% 
+  str_replace_all("(- Version)", "") %>% 
+  str_replace_all("(()[[:print:]][Vv]{1}(ersion)())", "")
+
+# create a corpus
+#docs <- Corpus(VectorSource(get(paste("text", i, sep=""))))
+docs1 <- Corpus(VectorSource(text1))
+
+# clean text1 data 
+docs1 <- docs1 %>%
+  tm_map(removePunctuation) %>%  # 구두점 제거 
+  tm_map(stripWhitespace) %>%  # 빈 띄어쓰기 제거 
+  tm_map(content_transformer(tolower)) %>%  # 소문자화 
+  tm_map(removeWords, c(stopwords("english"), 'dont', 'cant')) # 불용어 제거(english 패키지, 'dont' 'cant'는 en만 불용어로 설정하고 워드클라우드를 만들었더니 의미없는 단어가 몇 개 나와서 자발적으로 추가한 불용어임.)
+
+# create a document-term-matrix
+dtm1 <- TermDocumentMatrix(docs1)
+matrix1 <- as.matrix(dtm1) 
+
+words1 <- sort(rowSums(matrix1), decreasing = T) 
+df1 <- data.frame(word = names(words1), freq1 = words1)
+```
+
+동일한 방식으로 Text2와 Text3를 처리했다. 
+
+```{r}
+# Text2 처리 
+text2$track_name <-  text2$track_name %>% 
+  # 1) featuring 정보 제거 
+  str_replace("[[:blank:]]{1}[fF]{1}(eat)[[:print:]]+", "") %>% 
+  str_replace_all("[[:blank:]]{1}(FEAT.)[[:print:]]+", "") %>% 
+  # 2) remaster 정보 제거 
+  str_replace_all("(Remastered) +", "") %>% 
+  str_replace_all("[0-9]{4}[[:space:]]{1}(Remaster)", "") %>% 
+  str_replace_all("(-)[[:space:]]{1}(Remasterizado)[[:space:]]{1}[0-9]{4}", "") %>% 
+  str_replace_all("(- Remastered)", "") %>% 
+  str_replace_all("(Remastered)", "") %>% 
+  str_replace_all("(- Remaster)", "") %>% 
+  str_replace_all("[0-9]{4}[[:print:]](Remaster)", "") %>% 
+  str_replace_all("[0-9]{4}( Digital Remaster)+", "") %>% 
+  str_replace_all("[-(]{1}[[:print:]]+", "") %>% 
+  # 3) version 정보 
+  str_replace_all("(-)[[:space:]][[:print:]]+[Vv]{1}(ersion)", "") %>% 
+  str_replace_all("(- Version)", "") %>% 
+  str_replace_all("(()[[:print:]][Vv]{1}(ersion)())", "")
+
+# Create a corpus
+docs2 <- Corpus(VectorSource(text2))%>%
+  # Cleane text2 data 
+  tm_map(removePunctuation) %>%  
+  tm_map(stripWhitespace) %>%  
+  tm_map(content_transformer(tolower)) %>%   
+  tm_map(removeWords, c(stopwords("english"), 'dont', 'cant')) 
+
+# Create a document-term-matrix
+dtm2 <- TermDocumentMatrix(docs2)
+matrix2 <- as.matrix(dtm2) 
+
+words2 <- sort(rowSums(matrix2), decreasing = T) 
+df2 <- data.frame(word = names(words2), freq2 = words2)
+
+
+# Text3 처리
+text3$track_name <-  text3$track_name %>% 
+  # 1) featuring 정보 제거 
+  str_replace("[[:blank:]]{1}[fF]{1}(eat)[[:print:]]+", "") %>% 
+  str_replace_all("[[:blank:]]{1}(FEAT.)[[:print:]]+", "") %>% 
+  # 2) remaster 정보 제거 
+  str_replace_all("(Remastered) +", "") %>% 
+  str_replace_all("[0-9]{4}[[:space:]]{1}(Remaster)", "") %>% 
+  str_replace_all("(-)[[:space:]]{1}(Remasterizado)[[:space:]]{1}[0-9]{4}", "") %>% 
+  str_replace_all("(- Remastered)", "") %>% 
+  str_replace_all("(Remastered)", "") %>% 
+  str_replace_all("(- Remaster)", "") %>% 
+  str_replace_all("[0-9]{4}[[:print:]](Remaster)", "") %>% 
+  str_replace_all("[0-9]{4}( Digital Remaster)+", "") %>% 
+  str_replace_all("[-(]{1}[[:print:]]+", "") %>% 
+  # 3) version 정보 
+  str_replace_all("(-)[[:space:]][[:print:]]+[Vv]{1}(ersion)", "") %>% 
+  str_replace_all("(- Version)", "") %>% 
+  str_replace_all("(()[[:print:]][Vv]{1}(ersion)())", "")
+
+# Create a corpus
+docs3 <- Corpus(VectorSource(text3))%>%
+  # Cleane text2 data 
+  tm_map(removePunctuation) %>%  
+  tm_map(stripWhitespace) %>%  
+  tm_map(content_transformer(tolower)) %>%   
+  tm_map(removeWords, c(stopwords("english"), 'dont', 'cant')) 
+
+# Create a document-term-matrix
+dtm3 <- TermDocumentMatrix(docs3)
+matrix3 <- as.matrix(dtm3) 
+
+words3 <- sort(rowSums(matrix3), decreasing = T) 
+df3 <- data.frame(word = names(words3), freq3 = words3)
+```
+
+
+### df1, df2, df3 합치기 
+
+```{r}
+df1$word <- as.character(df1$word)
+df2$word <- as.character(df2$word)
+df3$word <- as.character(df3$word)
+
+df <- full_join(df1, df2, by="word") %>%
+  full_join(df3, by="word")
+
+df <- df %>% 
+  mutate(freq = rowSums(subset(df, select=c(freq1,freq2,freq3)), na.rm = T)) %>% 
+  select(word, freq) %>% 
+  arrange(desc(freq))
+```
+
+### 빈도수가 높은 상위 10개 단어  
+
+```{r}
+head(df,10)
+```
+
+[결과] act(4037회)로 가장 많았고, love(2922회)가 그 뒤를 이었으며, major, minor, one, song 순으로 많았다. 
+[추가설명] 클래식 음악의 경우, 노래제목이 Beethoven: Symphony No.9 in D minor Op. 125 'Choral' 와 같은 형식으로 표현된다. 베토벤 교향곡 제 9번 라단조 작품번호 125번 합창이라는 의미이다. 따라서 major, minor, iii 등을 불용어라 보기 어렵다고 판단하여 추가하지 않았다. 
+
+### Draw wordcloud 
+
+```{R}
+set.seed(1234) # for reproducibility 
+wordcloud(words = df$word, freq = df$freq, 
+          min.freq = 300, # 최소 300번 이상 나온 단어 추출  
+          random.order=FALSE, rot.per=0.35,         
+          colors=brewer.pal(8, "Dark2"))
+```
+
+[결과] act(4037회)로 가장 많은 이유는 행동을 의미하는 act와 악장을 의미하는 act가 합쳐졌기 때문으로 보인다. 
+
+
+## Sentiment Analysis 
+### [가설] 노래 제목에는 어떤 부정단어, 긍정단어가 많이 나올까?
+
+### Load Dictionary
+
+```{r}
+library(tidytext)
+## tidytext 패키지에 내장된 "bing" 감성어 사전(부정/긍정 2가지로 구분) 이용 
+```
+
+```{r}
+df_word_counts <- df %>% 
+  inner_join(get_sentiments("bing"), by='word')
+
+table(df_word_counts$sentiment)
+```
+
+[설명] 부정단어(1539개)가 긍정단어(752개)보다 많다. 
+
+### 상위 20개 부정단어/긍정단어 시각화  
+
+```{r}
+top_words <- df_word_counts %>% 
+  group_by(sentiment) %>% 
+  top_n(20, freq) %>% 
+  ungroup() %>% 
+  mutate(word=reorder(word,freq))
+
+library(ggplot2)
+ggplot(top_words, aes(word, freq, fill=sentiment))+
+  geom_col(show.legend = F)+
+  facet_wrap(~sentiment, scales = 'free')+
+  coord_flip()+
+  labs(x="", y="")
+```
+
+[결론] 노래 제목에 나오는 부정어로는 die가 1위로 두드러지게 많았고, 그 뒤를 bad, lost, death, fall, dead가 이었다. 죽음, 이별과 관련된 단어가 많았다. 한편 긍정단어 중 가장 많이 나온 것은 love였으며, 그 뒤를 like, good, right, overture가 이었다. 여기서 overture는 '서곡'으로 클래식 노래 제목으로 자주 들어가는 단어라 포함된 것으로 보인다. 긍정단어는 사랑, 아름다움, 자유 등 부정단어보다 다양한 양상의 표현이 보였다.  
+
+
